@@ -51,8 +51,13 @@
     float: left;
 }
 .controls label {
+    margin: 5px;
     min-width: 200px;
+    text-align: right;
     clear: both;
+}
+.controls input {
+    margin: 5px 0;
 }
 .controls .actions {
     clear: both;

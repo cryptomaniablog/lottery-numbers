@@ -205,26 +205,34 @@ function calcProbabilities(q){
 generate_html();
 
 //sets the initial values for the input boxes
-document.getElementById("q").value = defaults.quantity || 6;
-document.getElementById("b").value = defaults.bonus_quantity || 1;
+document.getElementById("q").value = defaults.quantity;
+document.getElementById("b").value = defaults.bonus_quantity;
+document.getElementById("max").value = defaults.max;
 
 //event handler for the "generate" button
 document.getElementById("generate").onclick = function(){
     var q = Number(document.getElementById("q").value),
-        b = Number(document.getElementById("b").value);
+        b = Number(document.getElementById("b").value),
+        max = Number(document.getElementById("max").value);
 
     //validate inputs and see if it is a number, and a whole number
-    if(isNaN(q) && q % 1 !== 0){
-        alert("Input must be a whole number");
+    if(isNaN(q) || q % 1 !== 0){
+        alert("Base number quantity must be a whole number");
         return false;  
     }
-    if(isNaN(b) && b % 1 !== 0){
-        alert("Input must be a whole number");
+    if(isNaN(b) || b % 1 !== 0){
+        alert("Bonus number quantity must be a whole number");
         return false;  
     }
+    if(isNaN(max) || (max % 1) !== 0 || max <= defaults.min){
+        alert("Maximum range must be a whole number and greater than 1");
+        return false;  
+    }
+    defaults.max = max;
+    
     //validate both values and see if they are in range
     if(q+b > (defaults.max - defaults.min + 1) || q+b < 1){
-        alert("Both quantities added must be between 1 and "+(defaults.max - defaults.min + 1));
+        alert("Both quantities added, must be between 1 and "+(defaults.max - defaults.min + 1));
         return false;
     }
 
