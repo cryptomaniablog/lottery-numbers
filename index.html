@@ -17,21 +17,35 @@
             <div class="panel panel-left">
                 <h3>And the numbers are...</h3>
                 <ul id="numbers" class="numbers"></ul>
+                <div class="controls">
+                    <h3>Settings</h3>
+                    <label>Quantity of base numbers:</label>
+                    <input type="text" id="q" />
+                    <label>Quantity of bonus numbers:</label>
+                    <input type="text" id="b" />
+                    <div class="actions">
+                        <button type="button" id="generate">Generate new numbers</button>
+                    </div>
+                </div>
+                <h3>Probabilities</h3>
+                <p>Listed below are the probabilities when matching base numbers:</p>
+                <table class="prob">
+                    <thead>
+                        <tr>
+                            <th># Matches</th>
+                            <th>Approx. Decimal Probability</th>
+                            <th>Approx. 1/Probability</th>
+                        </tr>
+                    </thead>
+                    <tbody id="prob"></tbody>
+                </table>
             </div>
             <div class="panel panel-right">
                 <h3>Colour legend</h3>
                 <ul id="legend" class="legend"></ul>
             </div>
         </div>
-        <div class="controls">
-            <label>Quantity of numbers:</label>
-            <input type="text" id="q" />
-            <label>Quantity of bonus numbers:</label>
-            <input type="text" id="b" />
-            <div class="actions">
-                <button type="button" id="generate">Generate new numbers</button>
-            </div>
-        </div>
+        
         <script src="js/lottery.js"></script>
     </body>
 </html>

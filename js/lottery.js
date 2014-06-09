@@ -80,14 +80,12 @@ function generate_lottery_number(){
 //generates the visual output
 function generate_html(q, b){
     var numbersElem = document.getElementById("numbers"),
-        legendElem = document.getElementById("legend"),
         collection = generate_lottery_numbers(q, b),
         colour_step = Math.round((defaults.max - defaults.min)/defaults.colours.length),
         item;
 
-    //empty the numbers and legend DOM elements
+    //empty the numbers DOM elements
     emptyElement(numbersElem);
-    emptyElement(legendElem);
 
     //loop through the whole collection and generate a list item
     for(var key in collection){
@@ -113,6 +111,19 @@ function generate_html(q, b){
         numbersElem.appendChild(item);
     }
 
+    generate_legend();
+    generate_probabilities(q);
+}
+
+//generate the legend with colours and their determined ranges
+function generate_legend(){
+    var legendElem = document.getElementById("legend"),
+        colour_step = Math.round((defaults.max - defaults.min)/defaults.colours.length),
+        item;
+
+    //empty the legend DOM elements
+    emptyElement(legendElem);
+
     //loop through all the colours for the legend and shows ranges
     for(var i=0;i < defaults.colours.length;i++){
         var min = (i*colour_step) + defaults.min - 1,
@@ -123,12 +134,29 @@ function generate_html(q, b){
         legendElem.appendChild(item);
     }
 }
+//generate the probabilities table
+function generate_probabilities(q){
+    var probElem = document.getElementById("prob"),
+        probs = calcProbabilities(q),
+        row, cell;
 
-//generate the legend with colours and their determined ranges
-function generate_legend(){
-    var content = document.getElementById("legend"),
-        item;
+    //empty the legend DOM elements
+    emptyElement(probElem);
 
+    //loop through all the colours for the legend and shows ranges
+    for(var i=0;i < probs.length;i++){
+        row = document.createElement("tr");
+        cell = document.createElement("td");
+        cell.appendChild(document.createTextNode(i));
+        row.appendChild(cell);
+        cell = document.createElement("td");
+        cell.appendChild(document.createTextNode(probs[i].toPrecision(4)));
+        row.appendChild(cell);
+        cell = document.createElement("td");
+        cell.appendChild(document.createTextNode(1/probs[i] % 1 !== 0 ? (1/probs[i]).toPrecision(7) : 1/probs[i]));
+        row.appendChild(cell);
+        probElem.appendChild(row);
+    }
 }
 
 //a function that removes all child nodes from a DOM element
@@ -139,6 +167,38 @@ function emptyElement(elem){
         elem.removeChild( fc );
         fc = elem.firstChild;
     }
+}
+
+//mathematical function to determine combination nCr
+function nCr(n, r){
+    var f=1, f1, f2, r1, res;
+
+    for(var i=1;i<=n;i++){
+        f = f * i;
+    } 
+     
+    r1 = n - r;
+    f1 = 1;
+    for(i=1;i<=r;i++){
+        f1 = f1 * i;
+    }
+    f2 = 1;
+    for(i=1;i<=r1;i++){
+        f2 = f2 * i;
+    }
+    res = f / (f1 * f2);
+
+    return Math.round(res*Math.pow(10,2))/Math.pow(10,2);
+}
+
+//function that calculates probabilities of scoring
+function calcProbabilities(q){
+    q = isNaN(q) ? defaults.quantity : q;
+    var prob = [];
+    for(var s=0;s <= q;s++){
+        prob.push(nCr(q, s) * nCr(((defaults.max - defaults.min) + 1) - q, q-s) / nCr((defaults.max - defaults.min) + 1, q));
+    }
+    return prob;
 }
 
 //execute the main function

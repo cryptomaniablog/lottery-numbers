@@ -71,7 +71,7 @@
 .panel {
   float: left;
 }
-.panel h3 {
+.panel h3:first-child {
     margin-top: 0;
 }
 .panel-left {
@@ -79,4 +79,11 @@
 }
 .panel-right {
     width: 20%;
+}
+
+.prob {
+  width: 100%;
+}
+.prob th {
+  text-align: left;
 }
