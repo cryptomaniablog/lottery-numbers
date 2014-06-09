@@ -6,15 +6,22 @@ A simple application that generates unique random lottery numbers
 ********************************************************************/
 
 //setting the default settings for the application
-var lottery_defaults = {
+var defaults = {
     quantity: 6,
     min: 1,
-    max: 49
+    max: 49,
+    colours: [
+        "gray",
+        "blue",
+        "pink",
+        "green",
+        "yellow"
+    ]
 };
 
 //generates the lottery numbers (q is quantity of them, default is 6)
 function generate_lottery_numbers(q){
-    q = q || lottery_defaults.quantity || 6;
+    q = q || defaults.quantity || 6;
     var numbers = [];
 
     //loop through the quantity of required numbers
@@ -36,33 +43,55 @@ function generate_lottery_numbers(q){
 
 //returns a random number from the min to max inclusive
 function generate_lottery_number(){
-    return Math.round((Math.random() * (lottery_defaults.max - lottery_defaults.min)) + lottery_defaults.min);
+    return Math.round((Math.random() * (defaults.max - defaults.min)) + defaults.min);
 }
 
 //generates the visual output
 function generate_html(q){
-    var content = document.getElementById("numbers"),
+    var numbersElem = document.getElementById("numbers"),
+        legendElem = document.getElementById("legend"),
         numbers = generate_lottery_numbers(q),
-        num_colours = 5,
-        colour_step = Math.round((lottery_defaults.max - lottery_defaults.min)/num_colours),
+        colour_step = Math.round((defaults.max - defaults.min)/defaults.colours.length),
         item;
 
-    emptyElement(content);
+    //empty the numbers and legend DOM elements
+    emptyElement(numbersElem);
+    emptyElement(legendElem);
 
+    //loop through all the numbers and generate a list item
     for(var key in numbers){
         item = document.createElement("li");
+        item.style.backgroundColor = defaults.colours[defaults.colours.length-1];
 
         //compares to match range and include classname with according colour
-        for(var i=1;i <= num_colours;i++){
-            if(numbers[key] < (i * colour_step)){
-                item.className = "colour"+i;
+        for(var i=0;i < defaults.colours.length;i++){
+            var max = (((i+1) * colour_step)-1) + defaults.min - 1;
+            if(numbers[key] <= max){
+                item.style.backgroundColor = defaults.colours[i];
                 break;
             }
         }
 
         item.appendChild(document.createTextNode(numbers[key]));
-        content.appendChild(item);
+        numbersElem.appendChild(item);
     }
+
+    //loop through all the colours for the legend and shows ranges
+    for(var i=0;i < defaults.colours.length;i++){
+        var min = (i*colour_step) + defaults.min - 1,
+            max = i === defaults.colours.length - 1 ? defaults.max : min + (colour_step - 1);
+        item = document.createElement("li");
+        item.style.backgroundColor = defaults.colours[i];
+        item.appendChild(document.createTextNode(min+" to "+max));
+        legendElem.appendChild(item);
+    }
+}
+
+//generate the legend with colours and their determined ranges
+function generate_legend(){
+    var content = document.getElementById("legend"),
+        item;
+
 }
 
 //a function that removes all child nodes from a DOM element
@@ -79,16 +108,16 @@ function emptyElement(elem){
 generate_html();
 
 //sets the initial value for the input box to the default quantity
-document.getElementById("q").value = lottery_defaults.quantity || 6;
+document.getElementById("q").value = defaults.quantity || 6;
 
 //event handler for the "generate" button
 document.getElementById("generate").onclick = function(){
     var q = document.getElementById("q").value;
 
     //validate input and see if it is a number, in the range, and a whole number
-    if(!isNaN(q) && q >= lottery_defaults.min && q <= lottery_defaults.max && q % 1 === 0){
+    if(!isNaN(q) && q <= (defaults.max - defaults.min + 1) && q % 1 === 0){
         generate_html(q);
     }else{
-        alert("Input must be a whole number from "+lottery_defaults.min+" to "+lottery_defaults.max);
+        alert("Input must be a whole number from 1 to "+(defaults.max - defaults.min + 1));
     }
 };

@@ -1,34 +1,41 @@
-.content > ul {
+.content {
+    position: relative;
+}
+
+.content .numbers {
     list-style: none;
     margin: 0;
     padding: 0;
     position: relative;
 }
 
-.content > ul > li {
+.content .numbers > li {
     float: left;
     min-width: 25px;
     text-align: center;
     margin-right: 10px;
     padding: 10px;
 }
-.content > ul > li:last-child {
+.content .numbers > li:last-child {
     margin-right: 0;
 }
-.content > ul > li.colour1 {
-    background-color: gray;
+
+.content .legend {
+    display: inline-block;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
 }
-.content > ul > li.colour2 {
-    background-color: blue;
+
+.content .legend > li {
+    min-width: 25px;
+    text-align: center;
+    margin-bottom: 5px;
+    padding: 5px;
 }
-.content > ul > li.colour3 {
-    background-color: pink;
-}
-.content > ul > li.colour4 {
-    background-color: green;
-}
-.content > ul > li.colour5 {
-    background-color: yellow;
+.content .legend > li:last-child {
+    margin-bottom: 0;
 }
 
 .content > label {
@@ -39,10 +46,23 @@
     margin-top: 10px;
 }
 
-.clearfix:after {
+.content:after,
+.numbers:after {
    content: " "; /* Older browser do not support empty content */
    visibility: hidden;
    display: block;
    height: 0;
    clear: both;
+}
+.panel {
+  float: left;
+}
+.panel h3 {
+  margin-top: 0;
+}
+.panel-left {
+  width: 80%;
+}
+.panel-right {
+  width: 20%;
 }
