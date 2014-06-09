@@ -15,19 +15,19 @@
 .content > ul > li:last-child {
     margin-right: 0;
 }
-.content > ul > li.green {
-    background-color: green;
-}
-.content > ul > li.blue {
-    background-color: blue;
-}
-.content > ul > li.gray {
+.content > ul > li.colour1 {
     background-color: gray;
 }
-.content > ul > li.pink {
+.content > ul > li.colour2 {
+    background-color: blue;
+}
+.content > ul > li.colour3 {
     background-color: pink;
 }
-.content > ul > li.yellow {
+.content > ul > li.colour4 {
+    background-color: green;
+}
+.content > ul > li.colour5 {
     background-color: yellow;
 }
 

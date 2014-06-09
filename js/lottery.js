@@ -5,12 +5,16 @@ Copyright Robert Stettner, 2014
 A simple application that generates unique random lottery numbers
 ********************************************************************/
 
-defaultQuantity = 6;
-
+//setting the default settings for the application
+var lottery_defaults = {
+    quantity: 6,
+    min: 1,
+    max: 49
+};
 
 //generates the lottery numbers (q is quantity of them, default is 6)
 function generate_lottery_numbers(q){
-    q = q || defaultQuantity || 6;
+    q = q || lottery_defaults.quantity || 6;
     var numbers = [];
 
     //loop through the quantity of required numbers
@@ -30,15 +34,17 @@ function generate_lottery_numbers(q){
     return numbers;
 }
 
-//returns a random number from 1 to 49 inclusive
+//returns a random number from the min to max inclusive
 function generate_lottery_number(){
-    return Math.round((Math.random() * 48) + 1);
+    return Math.round((Math.random() * (lottery_defaults.max - lottery_defaults.min)) + lottery_defaults.min);
 }
 
 //generates the visual output
 function generate_html(q){
     var content = document.getElementById("numbers"),
         numbers = generate_lottery_numbers(q),
+        num_colours = 5,
+        colour_step = Math.round((lottery_defaults.max - lottery_defaults.min)/num_colours),
         item;
 
     emptyElement(content);
@@ -47,16 +53,11 @@ function generate_html(q){
         item = document.createElement("li");
 
         //compares to match range and include classname with according colour
-        if(numbers[key] < 10){
-            item.className = "gray";
-        }else if(numbers[key] < 20){
-            item.className = "blue";
-        }else if(numbers[key] < 30){
-            item.className = "pink";
-        }else if(numbers[key] < 40){
-            item.className = "green";
-        }else if(numbers[key] < 50){
-            item.className = "yellow";
+        for(var i=1;i <= num_colours;i++){
+            if(numbers[key] < (i * colour_step)){
+                item.className = "colour"+i;
+                break;
+            }
         }
 
         item.appendChild(document.createTextNode(numbers[key]));
@@ -78,16 +79,16 @@ function emptyElement(elem){
 generate_html();
 
 //sets the initial value for the input box to the default quantity
-document.getElementById("q").value = defaultQuantity || 6;
+document.getElementById("q").value = lottery_defaults.quantity || 6;
 
 //event handler for the "generate" button
 document.getElementById("generate").onclick = function(){
     var q = document.getElementById("q").value;
-    
+
     //validate input and see if it is a number, in the range, and a whole number
-    if(!isNaN(q) && q > 0 && q < 50 && q % 1 === 0){
+    if(!isNaN(q) && q >= lottery_defaults.min && q <= lottery_defaults.max && q % 1 === 0){
         generate_html(q);
     }else{
-        alert("Input must be a whole number from 1 to 49");
+        alert("Input must be a whole number from "+lottery_defaults.min+" to "+lottery_defaults.max);
     }
 };
