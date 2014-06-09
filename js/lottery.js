@@ -81,6 +81,13 @@ generate_html();
 document.getElementById("q").value = defaultQuantity || 6;
 
 //event handler for the "generate" button
-document.getElementById("generate").onclick = function(){ 
-    generate_html(document.getElementById("q").value);
+document.getElementById("generate").onclick = function(){
+    var q = document.getElementById("q").value;
+    
+    //validate input and see if it is a number, in the range, and a whole number
+    if(!isNaN(q) && q > 0 && q < 50 && q % 1 === 0){
+        generate_html(q);
+    }else{
+        alert("Input must be a whole number from 1 to 49");
+    }
 };
