@@ -10,10 +10,11 @@
 }
 
 .content .numbers > li {
-    float: left;
-    min-width: 25px;
+    display: inline-block;
+    min-width: 30px;
     text-align: center;
     margin-right: 10px;
+    margin-bottom: 5px;
     padding: 10px;
 }
 .content .numbers > li:last-child {
@@ -45,6 +46,19 @@
 .controls {
     margin-top: 10px;
 }
+.controls label,
+.controls input {
+    float: left;
+}
+.controls label {
+    min-width: 200px;
+    clear: both;
+}
+.controls .actions {
+    clear: both;
+    padding-top: 5px;
+    padding-left: 200px;
+}
 
 .content:after,
 .numbers:after {
@@ -58,11 +72,11 @@
   float: left;
 }
 .panel h3 {
-  margin-top: 0;
+    margin-top: 0;
 }
 .panel-left {
-  width: 80%;
+    width: 80%;
 }
 .panel-right {
-  width: 20%;
+    width: 20%;
 }

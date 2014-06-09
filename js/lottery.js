@@ -8,6 +8,7 @@ A simple application that generates unique random lottery numbers
 //setting the default settings for the application
 var defaults = {
     quantity: 6,
+    bonus_quantity: 1,
     min: 1,
     max: 49,
     colours: [
@@ -19,26 +20,56 @@ var defaults = {
     ]
 };
 
-//generates the lottery numbers (q is quantity of them, default is 6)
-function generate_lottery_numbers(q){
-    q = q || defaults.quantity || 6;
-    var numbers = [];
+//generates the lottery numbers (q is quantity of them, b is how many bonus numbers)
+function generate_lottery_numbers(q, b){
+    q = isNaN(q) ? defaults.quantity : q;
+    b = isNaN(b) ? defaults.bonus_quantity : b;
+    var numbers = [],
+        bonus_numbers = [],
+        collection = [];
 
     //loop through the quantity of required numbers
-    for(var i=0;i < q;i++){
+    for(var i=0;i < q+b;i++){
         var j = generate_lottery_number();
 
-        //loop through until finds a unique random number
-        for(;numbers.indexOf(j) !== -1;j=generate_lottery_number()); 
+        if(i < q){
+            //loop through until finds a unique random number
+            for(;numbers.indexOf(j) !== -1;j=generate_lottery_number());
 
-        //add the random number to the array
-        numbers.push(j);
+            //add the random number to the regular numbers array
+            numbers.push(j);
+        }else{
+            //create a temporary array and concat both types of numbers together to determine overall uniqueness
+            var temp = numbers.concat(bonus_numbers);
+
+            //loop through until finds a unique random number
+            for(;temp.indexOf(j) !== -1 && temp.indexOf(j) !== -1;j=generate_lottery_number());
+
+            //add the random number to the bonus numbers array
+            bonus_numbers.push(j);
+        }
     }
 
-    //sort the numbers array with numerical comparator
+    //sort the arrays with numerical comparator
     numbers.sort(function(a, b){return a-b;});
+    bonus_numbers.sort(function(a, b){return a-b;});
     
-    return numbers;
+    //populate the collection
+    for(var i=0;i < q+b;i++){
+        if(i < q){
+            collection[i] = {
+                "number": numbers[i],
+                "bonus": false
+            };
+        }else{
+            collection[i] = {
+                "number": bonus_numbers[i-q],
+                "bonus": true
+            };
+        }
+    }
+
+    return collection;
 }
 
 //returns a random number from the min to max inclusive
@@ -47,10 +78,10 @@ function generate_lottery_number(){
 }
 
 //generates the visual output
-function generate_html(q){
+function generate_html(q, b){
     var numbersElem = document.getElementById("numbers"),
         legendElem = document.getElementById("legend"),
-        numbers = generate_lottery_numbers(q),
+        collection = generate_lottery_numbers(q, b),
         colour_step = Math.round((defaults.max - defaults.min)/defaults.colours.length),
         item;
 
@@ -58,21 +89,27 @@ function generate_html(q){
     emptyElement(numbersElem);
     emptyElement(legendElem);
 
-    //loop through all the numbers and generate a list item
-    for(var key in numbers){
+    //loop through the whole collection and generate a list item
+    for(var key in collection){
         item = document.createElement("li");
         item.style.backgroundColor = defaults.colours[defaults.colours.length-1];
 
         //compares to match range and include classname with according colour
         for(var i=0;i < defaults.colours.length;i++){
             var max = (((i+1) * colour_step)-1) + defaults.min - 1;
-            if(numbers[key] <= max){
+            if(collection[key].number <= max){
                 item.style.backgroundColor = defaults.colours[i];
                 break;
             }
         }
 
-        item.appendChild(document.createTextNode(numbers[key]));
+        item.appendChild(document.createTextNode(collection[key].number));
+
+        //if number is a bonus one, mark it by bordering it
+        if(collection[key].bonus){
+            item.style.border = "3px dotted black";
+        }
+
         numbersElem.appendChild(item);
     }
 
@@ -107,17 +144,29 @@ function emptyElement(elem){
 //execute the main function
 generate_html();
 
-//sets the initial value for the input box to the default quantity
+//sets the initial values for the input boxes
 document.getElementById("q").value = defaults.quantity || 6;
+document.getElementById("b").value = defaults.bonus_quantity || 1;
 
 //event handler for the "generate" button
 document.getElementById("generate").onclick = function(){
-    var q = document.getElementById("q").value;
+    var q = Number(document.getElementById("q").value),
+        b = Number(document.getElementById("b").value);
 
-    //validate input and see if it is a number, in the range, and a whole number
-    if(!isNaN(q) && q <= (defaults.max - defaults.min + 1) && q % 1 === 0){
-        generate_html(q);
-    }else{
-        alert("Input must be a whole number from 1 to "+(defaults.max - defaults.min + 1));
+    //validate inputs and see if it is a number, and a whole number
+    if(isNaN(q) && q % 1 !== 0){
+        alert("Input must be a whole number");
+        return false;  
     }
+    if(isNaN(b) && b % 1 !== 0){
+        alert("Input must be a whole number");
+        return false;  
+    }
+    //validate both values and see if they are in range
+    if(q+b > (defaults.max - defaults.min + 1) || q+b < 1){
+        alert("Both quantities added must be between 1 and "+(defaults.max - defaults.min + 1));
+        return false;
+    }
+
+    generate_html(q, b);
 };
