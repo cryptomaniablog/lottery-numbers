@@ -6,10 +6,10 @@ describe("Lottery numbers", function() {
                 var lottery = new Lottery({auto_gen: true});
                 expect(lottery.generateNumbers).toHaveBeenCalled();
             });
-            it("should call its prototype's 'render'", function() {
-                spyOn(Lottery.prototype, 'render');  //.andCallThrough();
+            it("should call 'domready'", function() {
+                spyOn(window, 'domready');
                 var lottery = new Lottery({auto_gen: true});
-                expect(lottery.render).toHaveBeenCalled();
+                expect(domready).toHaveBeenCalled();
             });
         });
         describe("the 'collection' property", function() {
@@ -37,10 +37,10 @@ describe("Lottery numbers", function() {
                 var lottery = new Lottery();
                 expect(lottery.generateNumbers).not.toHaveBeenCalled();
             });
-            it("should not call its prototype's render", function() {
-                spyOn(Lottery.prototype, 'render');
+            it("should not call 'domready'", function() {
+                spyOn(window, 'domready');
                 var lottery = new Lottery();
-                expect(lottery.render).not.toHaveBeenCalled();
+                expect(domready).not.toHaveBeenCalled();
             });
         });
         describe("the 'collection' property", function() {
