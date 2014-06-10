@@ -17,22 +17,18 @@ var Lottery = function(options){
     }
     this.options = options;
 
-    //bind generation method to form submission only if form exists
-    if(!!this.options.element.form){
-        this.options.element.form.onsubmit = this.onClickGenerate.bind(this);
-    }
-
-    //sets the initial values for the input boxes
-    for (var opt in this.options){
-        var elem = document.getElementById(opt);
-        if(!!elem){
-            elem.value = this.options[opt];
-        }
-    }
     //generate and render when auto-generation is set to true
     if(this.options.auto_gen){
         this.generateNumbers();
-        this.render();
+
+        //check to see if DOM is ready
+        if(typeof window.domready === "function"){
+            window.domready(this.onDOMReady.bind(this));
+        }else if(window.jQuery && typeof window.jQuery.ready === "function"){
+            window.jQuery(document).ready(this.onDOMReady.bind(this));
+        }else{
+            console.error("Error: cannot render before DOM is ready");
+        }     
     }
 }
 
@@ -51,10 +47,10 @@ Lottery.prototype = {
             "yellow"
         ],
         element: {
-            form: document.getElementsByTagName("form")[0],
-            number_list: document.getElementById("numbers"),
-            legend: document.getElementById("legend"),
-            probability_table: document.getElementById("prob")
+            form: "form",
+            number_list: "#numbers",
+            legend: "#legend",
+            probability_table: "#prob"
         }
     },
     collection: [],
@@ -116,9 +112,11 @@ Lottery.prototype = {
         return Math.round((Math.random() * (this.options.max - this.options.min)) + this.options.min);
     },
     render: function(){
-        if(!!this.options.element.number_list){
+        var elem = document.querySelector(this.options.element.number_list);
+
+        if(!!elem){
             //empty the numbers DOM elements
-            this.emptyElement(this.options.element.number_list);
+            this.emptyElement(elem);
 
             //loop through the whole collection and generate a list item
             for(var key in this.collection){
@@ -131,7 +129,7 @@ Lottery.prototype = {
                     item.style.border = "3px dotted black";
                 }
 
-                this.options.element.number_list.appendChild(item);
+                elem.appendChild(item);
             }
 
             this.applyColours();
@@ -163,11 +161,13 @@ Lottery.prototype = {
 
     //generate the legend with colours and their determined ranges
     generateLegend: function(){
-        if(!!this.options.element.legend){
+        var elem = document.querySelector(this.options.element.legend);
+        
+        if(!!elem){
             var colour_step = Math.round((this.options.max - this.options.min)/this.options.colours.length);
 
             //empty the legend DOM elements
-            this.emptyElement(this.options.element.legend);
+            this.emptyElement(elem);
 
             //loop through all the colours for the legend and shows ranges
             for(var i=0;i < this.options.colours.length;i++){
@@ -176,15 +176,17 @@ Lottery.prototype = {
                     item = document.createElement("li");
                 item.style.backgroundColor = this.options.colours[i];
                 item.appendChild(document.createTextNode(min+" to "+max));
-                this.options.element.legend.appendChild(item);
+                elem.appendChild(item);
             }
         }
     },
     //render the probabilities table
     renderProbabilities: function(){
-        if(!!this.options.element.probability_table){
+        var elem = document.querySelector(this.options.element.probability_table);
+
+        if(!!elem){
             //empty the legend DOM elements
-            this.emptyElement(this.options.element.probability_table);
+            this.emptyElement(elem);
 
             //loop through all the colours for the legend and shows ranges
             for(var i=0;i < this.probabilities.length;i++){
@@ -198,7 +200,7 @@ Lottery.prototype = {
                 cell = document.createElement("td");
                 cell.appendChild(document.createTextNode(1/this.probabilities[i] % 1 !== 0 ? (1/this.probabilities[i]).toPrecision(7) : 1/this.probabilities[i]));
                 row.appendChild(cell);
-                this.options.element.probability_table.appendChild(row);
+                elem.appendChild(row);
             }
         }
     },
@@ -252,7 +254,7 @@ Lottery.prototype = {
         var form = {};
 
         for (var opt in this.options){
-            var elem = document.getElementById(opt);
+            var elem = document.querySelector('#'+opt) || document.querySelector('[name="'+opt+']');
             if(!!elem){
                 form[opt] = Number(elem.value);
             }
@@ -282,6 +284,23 @@ Lottery.prototype = {
         this.options.b = form.b;
 
         this.generateNumbers();
+        this.render();
+    },
+    onDOMReady: function(){
+        //bind generation method to form submission only if form exists
+        var form = document.querySelector(this.options.element.form || "form");
+        if(!!form){
+            form.onsubmit = this.onClickGenerate.bind(this);
+        }
+
+        //sets the initial values for the input boxes
+        for (var opt in this.options){
+            var elem = document.querySelector('#'+opt) || document.querySelector('[name="'+opt+'"]');
+            if(!!elem){
+                elem.value = this.options[opt];
+            }
+        }
+
         this.render();
     }
 };

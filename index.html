@@ -7,6 +7,11 @@
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link rel="stylesheet" href="css/style.css">
+        <script src="js/libs/domready.js"></script>
+        <script src="js/lottery.js"></script>
+        <script type="text/javascript">
+            var lottery = new Lottery({auto_gen: true});
+        </script>
     </head>
     <body>
         <div class="header">
@@ -47,10 +52,5 @@
                 <ul id="legend" class="legend"></ul>
             </div>
         </div>
-        
-        <script src="js/lottery.js"></script>
-        <script type="text/javascript">
-            var lottery = new Lottery({auto_gen: true});
-        </script>
     </body>
 </html>
