@@ -1,8 +1,8 @@
 Lottery numbers
 ===============
 
-Lottery numbers is a simple lottery number generator, that can be configured to 
-generate lottery results using different parameters, calculates matching 
+Lottery numbers is a Javascript lottery number generator, that can be configured
+to generate lottery results using different parameters, calculates matching 
 probabilities, and allows for colour number range categories.
 
 Cross-platform Compatibility
@@ -17,8 +17,29 @@ Cross-platform Compatibility
 Example Usage
 -------------
 
+To generate a common 1 to 49, 6 number picked lottery, use the following:
+
 ```js
-    var lottery = Lottery();
+    var lottery = Lottery({
+        auto_gen: true,
+        min: 1,
+        max: 49,
+        q: 6,
+        b: 0
+    });
+```
+
+To generate a common 1 to 45, 6 base and 2 bonus (supplementary) number picked 
+lottery, use the following:
+
+```js
+    var lottery = Lottery({
+        auto_gen: true,
+        min: 1,
+        max: 45,
+        q: 6,
+        b: 2
+    });
 ```
 
 Feature Overview
