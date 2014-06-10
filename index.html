@@ -17,7 +17,7 @@
             <div class="panel panel-left">
                 <h3>And the numbers are...</h3>
                 <ul id="numbers" class="numbers"></ul>
-                <div class="controls">
+                <form class="controls">
                     <h3>Settings</h3>
                     <label>Numbers 1 to</label>
                     <input type="text" id="max" />
@@ -26,9 +26,9 @@
                     <label>Quantity of bonus numbers:</label>
                     <input type="text" id="b" />
                     <div class="actions">
-                        <button type="button" id="generate">Generate new numbers</button>
+                        <button type="submit" id="generate">Generate new numbers</button>
                     </div>
-                </div>
+                </form>
                 <h3>Probabilities</h3>
                 <p>Listed below are the probabilities when matching base numbers:</p>
                 <table class="prob">
@@ -49,5 +49,8 @@
         </div>
         
         <script src="js/lottery.js"></script>
+        <script type="text/javascript">
+            var lottery = new Lottery({auto_gen: true});
+        </script>
     </body>
 </html>

@@ -1,240 +1,287 @@
 /********************************************************************
-Lottery Number v0.0.1
+Lottery Number v0.0.2
 Copyright Robert Stettner, 2014
 
 A simple application that generates unique random lottery numbers
 ********************************************************************/
 
-//setting the default settings for the application
-var defaults = {
-    quantity: 6,
-    bonus_quantity: 1,
-    min: 1,
-    max: 49,
-    colours: [
-        "gray",
-        "blue",
-        "pink",
-        "green",
-        "yellow"
-    ]
-};
+//the Lottery constructor
+var Lottery = function(options){
+    options = options || {};
 
-//generates the lottery numbers (q is quantity of them, b is how many bonus numbers)
-function generate_lottery_numbers(q, b){
-    q = isNaN(q) ? defaults.quantity : q;
-    b = isNaN(b) ? defaults.bonus_quantity : b;
-    var numbers = [],
-        bonus_numbers = [],
-        collection = [];
-
-    //loop through the quantity of required numbers
-    for(var i=0;i < q+b;i++){
-        var j = generate_lottery_number();
-
-        if(i < q){
-            //loop through until finds a unique random number
-            for(;numbers.indexOf(j) !== -1;j=generate_lottery_number());
-
-            //add the random number to the regular numbers array
-            numbers.push(j);
-        }else{
-            //create a temporary array and concat both types of numbers together to determine overall uniqueness
-            var temp = numbers.concat(bonus_numbers);
-
-            //loop through until finds a unique random number
-            for(;temp.indexOf(j) !== -1 && temp.indexOf(j) !== -1;j=generate_lottery_number());
-
-            //add the random number to the bonus numbers array
-            bonus_numbers.push(j);
+    //extend the options with defaults
+    for (var opt in this.defaults){
+        if (this.defaults.hasOwnProperty(opt) && !options.hasOwnProperty(opt)){
+            options[opt] = this.defaults[opt];
         }
     }
+    this.options = options;
 
-    //sort the arrays with numerical comparator
-    numbers.sort(function(a, b){return a-b;});
-    bonus_numbers.sort(function(a, b){return a-b;});
-    
-    //populate the collection
-    for(var i=0;i < q+b;i++){
-        if(i < q){
-            collection[i] = {
-                "number": numbers[i],
-                "bonus": false
-            };
-        }else{
-            collection[i] = {
-                "number": bonus_numbers[i-q],
-                "bonus": true
-            };
-        }
+    //bind generation method to form submission only if form exists
+    if(!!this.options.element.form){
+        this.options.element.form.onsubmit = this.onClickGenerate.bind(this);
     }
 
-    return collection;
+    //sets the initial values for the input boxes
+    for (var opt in this.options){
+        var elem = document.getElementById(opt);
+        if(!!elem){
+            elem.value = this.options[opt];
+        }
+    }
+    //generate and render when auto-generation is set to true
+    if(this.options.auto_gen){
+        this.generateNumbers();
+        this.render();
+    }
 }
 
-//returns a random number from the min to max inclusive
-function generate_lottery_number(){
-    return Math.round((Math.random() * (defaults.max - defaults.min)) + defaults.min);
-}
+Lottery.prototype = {
+    constructor: Lottery,
+    defaults: { //setting the default settings and the global collection for the application
+        q: 6,   //base number quantity
+        b: 1,   //bonus number quantity
+        min: 1,
+        max: 49,
+        colours: [
+            "gray",
+            "blue",
+            "pink",
+            "green",
+            "yellow"
+        ],
+        element: {
+            form: document.getElementsByTagName("form")[0],
+            number_list: document.getElementById("numbers"),
+            legend: document.getElementById("legend"),
+            probability_table: document.getElementById("prob")
+        }
+    },
+    collection: [],
+    probabilities: [],
+    //method that generates the lottery numbers (q is quantity of them, b is how many bonus numbers)
+    generateNumbers: function(){
+        var numbers = [],
+            bonus_numbers = [];
 
-//generates the visual output
-function generate_html(q, b){
-    var numbersElem = document.getElementById("numbers"),
-        collection = generate_lottery_numbers(q, b),
-        colour_step = Math.round((defaults.max - defaults.min)/defaults.colours.length),
-        item;
+        //reset the collection
+        this.collection = [];
 
-    //empty the numbers DOM elements
-    emptyElement(numbersElem);
+        //loop through the quantity of required numbers
+        for(var i=0;i < this.options.q+this.options.b;i++){
+            var j = this.generateNumber();
 
-    //loop through the whole collection and generate a list item
-    for(var key in collection){
-        item = document.createElement("li");
-        item.style.backgroundColor = defaults.colours[defaults.colours.length-1];
+            if(i < this.options.q){
+                //loop through until finds a unique random number
+                for(;numbers.indexOf(j) !== -1;j=this.generateNumber());
 
-        //compares to match range and include classname with according colour
-        for(var i=0;i < defaults.colours.length;i++){
-            var max = (((i+1) * colour_step)-1) + defaults.min - 1;
-            if(collection[key].number <= max){
-                item.style.backgroundColor = defaults.colours[i];
-                break;
+                //add the random number to the regular numbers array
+                numbers.push(j);
+            }else{
+                //create a temporary array and concat both types of numbers together to determine overall uniqueness
+                var temp = numbers.concat(bonus_numbers);
+
+                //loop through until finds a unique random number
+                for(;temp.indexOf(j) !== -1 && temp.indexOf(j) !== -1;j=this.generateNumber());
+
+                //add the random number to the bonus numbers array
+                bonus_numbers.push(j);
             }
         }
 
-        item.appendChild(document.createTextNode(collection[key].number));
-
-        //if number is a bonus one, mark it by bordering it
-        if(collection[key].bonus){
-            item.style.border = "3px dotted black";
+        //sort the arrays with numerical comparator
+        numbers.sort(function(a, b){return a-b;});
+        bonus_numbers.sort(function(a, b){return a-b;});
+        
+        //populate the collection
+        for(var i=0;i < this.options.q+this.options.b;i++){
+            if(i < this.options.q){
+                this.collection[i] = {
+                    "number": numbers[i],
+                    "bonus": false
+                };
+            }else{
+                this.collection[i] = {
+                    "number": bonus_numbers[i-this.options.q],
+                    "bonus": true
+                };
+            }
         }
 
-        numbersElem.appendChild(item);
+        //calculate probabilities
+        this.calculateProbabilities();
+    },
+    //method that returns a random number from the min to max inclusive
+    generateNumber: function(){
+        return Math.round((Math.random() * (this.options.max - this.options.min)) + this.options.min);
+    },
+    render: function(){
+        if(!!this.options.element.number_list){
+            //empty the numbers DOM elements
+            this.emptyElement(this.options.element.number_list);
+
+            //loop through the whole collection and generate a list item
+            for(var key in this.collection){
+                var item = document.createElement("li");
+                item.setAttribute("name", this.collection[key].number.toString());
+                item.appendChild(document.createTextNode(this.collection[key].number));
+
+                //if number is a bonus one, mark it by bordering it
+                if(this.collection[key].bonus){
+                    item.style.border = "3px dotted black";
+                }
+
+                this.options.element.number_list.appendChild(item);
+            }
+
+            this.applyColours();
+        }
+
+        this.generateLegend();
+        this.renderProbabilities();
+    },
+    applyColours: function(){
+        var colour_step = Math.round((this.options.max - this.options.min)/this.options.colours.length);
+
+        for(var key in this.collection){
+            var elems = document.getElementsByName(this.collection[key].number.toString());
+            
+            if(elems.length > 0){
+                elems[0].style.backgroundColor = this.options.colours[this.options.colours.length-1];
+
+                //compares to match range and include classname with according colour
+                for(var i=0;i < this.options.colours.length;i++){
+                    var max = (((i+1) * colour_step)-1) + this.options.min - 1;
+                    if(this.collection[key].number <= max){
+                        elems[0].style.backgroundColor = this.options.colours[i];
+                        break;
+                    }
+                }
+            }
+        }
+    },
+
+    //generate the legend with colours and their determined ranges
+    generateLegend: function(){
+        if(!!this.options.element.legend){
+            var colour_step = Math.round((this.options.max - this.options.min)/this.options.colours.length);
+
+            //empty the legend DOM elements
+            this.emptyElement(this.options.element.legend);
+
+            //loop through all the colours for the legend and shows ranges
+            for(var i=0;i < this.options.colours.length;i++){
+                var min = (i*colour_step) + this.options.min - 1,
+                    max = i === this.options.colours.length - 1 ? this.options.max : min + (colour_step - 1),
+                    item = document.createElement("li");
+                item.style.backgroundColor = this.options.colours[i];
+                item.appendChild(document.createTextNode(min+" to "+max));
+                this.options.element.legend.appendChild(item);
+            }
+        }
+    },
+    //render the probabilities table
+    renderProbabilities: function(){
+        if(!!this.options.element.probability_table){
+            //empty the legend DOM elements
+            this.emptyElement(this.options.element.probability_table);
+
+            //loop through all the colours for the legend and shows ranges
+            for(var i=0;i < this.probabilities.length;i++){
+                var row = document.createElement("tr"),
+                    cell = document.createElement("td");
+                cell.appendChild(document.createTextNode(i));
+                row.appendChild(cell);
+                cell = document.createElement("td");
+                cell.appendChild(document.createTextNode(this.probabilities[i].toPrecision(4)));
+                row.appendChild(cell);
+                cell = document.createElement("td");
+                cell.appendChild(document.createTextNode(1/this.probabilities[i] % 1 !== 0 ? (1/this.probabilities[i]).toPrecision(7) : 1/this.probabilities[i]));
+                row.appendChild(cell);
+                this.options.element.probability_table.appendChild(row);
+            }
+        }
+    },
+
+    //method that removes all child nodes from a DOM element
+    emptyElement: function(elem){
+        if(elem){
+            var fc = elem.firstChild;
+
+            while( fc ) {
+                elem.removeChild( fc );
+                fc = elem.firstChild;
+            }
+        }
+    },
+
+    //mathematical method to determine combination nCr
+    nCr: function(n, r){
+        var f=1, f1, f2, r1, res;
+
+        for(var i=1;i<=n;i++){
+            f = f * i;
+        } 
+         
+        r1 = n - r;
+        f1 = 1;
+        for(i=1;i<=r;i++){
+            f1 = f1 * i;
+        }
+        f2 = 1;
+        for(i=1;i<=r1;i++){
+            f2 = f2 * i;
+        }
+        res = f / (f1 * f2);
+
+        return Math.round(res*Math.pow(10,2))/Math.pow(10,2);
+    },
+
+    //method that calculates probabilities of scoring
+    calculateProbabilities: function(){
+        //reset the probabilities array
+        this.probabilities = [];
+
+        for(var s=0;s <= this.options.q;s++){
+            this.probabilities.push(this.nCr(this.options.q, s) * this.nCr(((this.options.max - this.options.min) + 1) - this.options.q, this.options.q-s) / this.nCr((this.options.max - this.options.min) + 1, this.options.q));
+        }
+    },
+
+    onClickGenerate: function(e){
+        e.preventDefault();
+        var form = {};
+
+        for (var opt in this.options){
+            var elem = document.getElementById(opt);
+            if(!!elem){
+                form[opt] = Number(elem.value);
+            }
+        }
+
+        //validate inputs and see if it is a number, and a whole number
+        if(isNaN(form.q) || form.q % 1 !== 0){
+            alert("Base number quantity must be a whole number");
+            return false;  
+        }
+        if(isNaN(form.b) || form.b % 1 !== 0){
+            alert("Bonus number quantity must be a whole number");
+            return false;  
+        }
+        if(isNaN(form.max) || (form.max % 1) !== 0 || form.max <= this.options.min){
+            alert("Maximum range must be a whole number and greater than 1");
+            return false;  
+        }
+        this.options.max = form.max;
+        
+        //validate both values and see if they are in range
+        if(form.q+form.b > (this.options.max - this.options.min + 1) || form.q+form.b < 1){
+            alert("Both quantities added, must be between 1 and "+(this.options.max - this.options.min + 1));
+            return false;
+        }
+        this.options.q = form.q;
+        this.options.b = form.b;
+
+        this.generateNumbers();
+        this.render();
     }
-
-    generate_legend();
-    generate_probabilities(q);
-}
-
-//generate the legend with colours and their determined ranges
-function generate_legend(){
-    var legendElem = document.getElementById("legend"),
-        colour_step = Math.round((defaults.max - defaults.min)/defaults.colours.length),
-        item;
-
-    //empty the legend DOM elements
-    emptyElement(legendElem);
-
-    //loop through all the colours for the legend and shows ranges
-    for(var i=0;i < defaults.colours.length;i++){
-        var min = (i*colour_step) + defaults.min - 1,
-            max = i === defaults.colours.length - 1 ? defaults.max : min + (colour_step - 1);
-        item = document.createElement("li");
-        item.style.backgroundColor = defaults.colours[i];
-        item.appendChild(document.createTextNode(min+" to "+max));
-        legendElem.appendChild(item);
-    }
-}
-//generate the probabilities table
-function generate_probabilities(q){
-    var probElem = document.getElementById("prob"),
-        probs = calcProbabilities(q),
-        row, cell;
-
-    //empty the legend DOM elements
-    emptyElement(probElem);
-
-    //loop through all the colours for the legend and shows ranges
-    for(var i=0;i < probs.length;i++){
-        row = document.createElement("tr");
-        cell = document.createElement("td");
-        cell.appendChild(document.createTextNode(i));
-        row.appendChild(cell);
-        cell = document.createElement("td");
-        cell.appendChild(document.createTextNode(probs[i].toPrecision(4)));
-        row.appendChild(cell);
-        cell = document.createElement("td");
-        cell.appendChild(document.createTextNode(1/probs[i] % 1 !== 0 ? (1/probs[i]).toPrecision(7) : 1/probs[i]));
-        row.appendChild(cell);
-        probElem.appendChild(row);
-    }
-}
-
-//a function that removes all child nodes from a DOM element
-function emptyElement(elem){
-    var fc = elem.firstChild;
-
-    while( fc ) {
-        elem.removeChild( fc );
-        fc = elem.firstChild;
-    }
-}
-
-//mathematical function to determine combination nCr
-function nCr(n, r){
-    var f=1, f1, f2, r1, res;
-
-    for(var i=1;i<=n;i++){
-        f = f * i;
-    } 
-     
-    r1 = n - r;
-    f1 = 1;
-    for(i=1;i<=r;i++){
-        f1 = f1 * i;
-    }
-    f2 = 1;
-    for(i=1;i<=r1;i++){
-        f2 = f2 * i;
-    }
-    res = f / (f1 * f2);
-
-    return Math.round(res*Math.pow(10,2))/Math.pow(10,2);
-}
-
-//function that calculates probabilities of scoring
-function calcProbabilities(q){
-    q = isNaN(q) ? defaults.quantity : q;
-    var prob = [];
-    for(var s=0;s <= q;s++){
-        prob.push(nCr(q, s) * nCr(((defaults.max - defaults.min) + 1) - q, q-s) / nCr((defaults.max - defaults.min) + 1, q));
-    }
-    return prob;
-}
-
-//execute the main function
-generate_html();
-
-//sets the initial values for the input boxes
-document.getElementById("q").value = defaults.quantity;
-document.getElementById("b").value = defaults.bonus_quantity;
-document.getElementById("max").value = defaults.max;
-
-//event handler for the "generate" button
-document.getElementById("generate").onclick = function(){
-    var q = Number(document.getElementById("q").value),
-        b = Number(document.getElementById("b").value),
-        max = Number(document.getElementById("max").value);
-
-    //validate inputs and see if it is a number, and a whole number
-    if(isNaN(q) || q % 1 !== 0){
-        alert("Base number quantity must be a whole number");
-        return false;  
-    }
-    if(isNaN(b) || b % 1 !== 0){
-        alert("Bonus number quantity must be a whole number");
-        return false;  
-    }
-    if(isNaN(max) || (max % 1) !== 0 || max <= defaults.min){
-        alert("Maximum range must be a whole number and greater than 1");
-        return false;  
-    }
-    defaults.max = max;
-    
-    //validate both values and see if they are in range
-    if(q+b > (defaults.max - defaults.min + 1) || q+b < 1){
-        alert("Both quantities added, must be between 1 and "+(defaults.max - defaults.min + 1));
-        return false;
-    }
-
-    generate_html(q, b);
 };
