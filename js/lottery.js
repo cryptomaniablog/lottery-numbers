@@ -109,7 +109,7 @@ Lottery.prototype = {
     },
     //method that returns a random number from the min to max inclusive
     generateNumber: function(){
-        return Math.round((Math.random() * (this.options.max - this.options.min)) + this.options.min);
+        return Math.floor(Math.random() * (this.options.max - this.options.min + 1)) + this.options.min;
     },
     render: function(){
         var elem = document.querySelector(this.options.element.number_list);

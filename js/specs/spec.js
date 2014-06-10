@@ -61,10 +61,100 @@ describe("Lottery numbers", function() {
             });
         });
     });
+    describe("when generating a number:", function() {
+        beforeEach(function() {
+            lottery = new Lottery();
+            oldRandom = Math.random;
+            lottery.options.q = 6;
+            lottery.options.b = 0;
+        });
+        describe("with 1 to 49 range, the result", function() {
+            beforeEach(function() {
+                lottery.options.min = 1;
+                lottery.options.max = 49;
+            });
+            it("should be 1 when injecting Math.random with 0", function() {
+                Math.random = function(){ return 0; };
+                expect(lottery.generateNumber()).toEqual(1);
+            });
+            it("should be 49 when injecting Math.random with 0.99999", function() {
+                Math.random = function(){ return 0.99999; };
+                expect(lottery.generateNumber()).toEqual(49);
+            });
+        });
+        describe("with 1 to 2 range, the result", function() {
+            beforeEach(function() {
+                lottery.options.min = 1;
+                lottery.options.max = 2;
+            });
+            it("should be 1 when injecting Math.random with 0", function() {
+                Math.random = function(){ return 0; };
+                expect(lottery.generateNumber()).toEqual(1);
+            });
+            it("should be 2 when injecting Math.random with 0.99999", function() {
+                Math.random = function(){ return 0.99999; };
+                expect(lottery.generateNumber()).toEqual(2);
+            });
+        });
+        describe("with 1 to 11 range, the result", function() {
+            beforeEach(function() {
+                lottery.options.min = 1;
+                lottery.options.max = 11;
+            });
+            it("should be 1 when injecting Math.random with 0", function() {
+                Math.random = function(){ return 0; };
+                expect(lottery.generateNumber()).toEqual(1);
+            });
+            it("should be 2 when injecting Math.random with 0.1", function() {
+                Math.random = function(){ return 0.1; };
+                expect(lottery.generateNumber()).toEqual(2);
+            });
+            it("should be 3 when injecting Math.random with 0.2", function() {
+                Math.random = function(){ return 0.2; };
+                expect(lottery.generateNumber()).toEqual(3);
+            });
+            it("should be 4 when injecting Math.random with 0.3", function() {
+                Math.random = function(){ return 0.3; };
+                expect(lottery.generateNumber()).toEqual(4);
+            });
+            it("should be 5 when injecting Math.random with 0.4", function() {
+                Math.random = function(){ return 0.4; };
+                expect(lottery.generateNumber()).toEqual(5);
+            });
+            it("should be 6 when injecting Math.random with 0.5", function() {
+                Math.random = function(){ return 0.5; };
+                expect(lottery.generateNumber()).toEqual(6);
+            });
+            it("should be 7 when injecting Math.random with 0.6", function() {
+                Math.random = function(){ return 0.6; };
+                expect(lottery.generateNumber()).toEqual(7);
+            });
+            it("should be 8 when injecting Math.random with 0.7", function() {
+                Math.random = function(){ return 0.7; };
+                expect(lottery.generateNumber()).toEqual(8);
+            });
+            it("should be 9 when injecting Math.random with 0.8", function() {
+                Math.random = function(){ return 0.8; };
+                expect(lottery.generateNumber()).toEqual(9);
+            });
+            it("should be 10 when injecting Math.random with 0.9", function() {
+                Math.random = function(){ return 0.9; };
+                expect(lottery.generateNumber()).toEqual(10);
+            });
+            it("should be 11 when injecting Math.random with 0.99999", function() {
+                Math.random = function(){ return 0.99999; };
+                expect(lottery.generateNumber()).toEqual(11);
+            });
+        });
+        afterEach(function() {
+            Math.random = oldRandom;
+        });
+    });
     describe("when generating numbers:", function() {
         beforeEach(function() {
             lottery = new Lottery();
         });
+
         describe("with 1 to 49 range, 6 base and no bonus numbers", function() {
             beforeEach(function() {
                 lottery.options.q = 6;
