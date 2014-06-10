@@ -36,7 +36,7 @@ Lottery.prototype = {
     constructor: Lottery,
     defaults: { //setting the default settings and the global collection for the application
         q: 6,   //base number quantity
-        b: 1,   //bonus number quantity
+        b: 0,   //bonus number quantity
         min: 1,
         max: 49,
         colours: [
